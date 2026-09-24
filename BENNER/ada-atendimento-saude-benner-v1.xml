@@ -1,0 +1,51 @@
+<include>
+    <extension name="ada-cob-generic-company">
+        <condition field="destination_number" expression="^(ada[-_]atendimento[-_]saude[-_]benner[-_]v1)$"/>
+        <condition field="${module_exists(mod_v8)}" expression="true">
+
+            <action application="set" data="campaign=ivrway"/>
+
+            <action application="set" data="defaultPath=/Olos/PBX/Audio/IVR/ADWay/"/>
+            <action application="set" data="numbersPath=Numeros/"/>
+            <action application="set" data="namesPath=Nomes/"/>
+            <action application="set" data="menuPath=NEGOCIADORITAUPJ/"/>
+            <action application="set" data="neuralTTSPath=NeuralTTSNatalia/"/>
+            <action application="set" data="announcer=Priscilla_Oliva"/>
+            <action application="set" data="GenderAnnouncer=F"/>
+            <action application="set" data="destInboundCampaign=0"/>
+            <action application="set" data="nameMailingField=name"/>
+            <action application="set" data="phone=10315"/>
+
+            <action application="set" data="x-tenant=${sip_h_X-Tenant}" inline="true"/>
+            <action application="set" data="x-way-ip=${sip_h_X-WayIp}" inline="true"/>
+            <action application="set" data="x-way-port=${sip_h_X-WayPort}" inline="true"/>
+            <action application="set" data="x-app=${sip_h_X-App}" inline="true"/>
+            <action application="set" data="x-mas-ip=${sip_h_X-MasIp}" inline="true"/>
+            <action application="set" data="x-mas-port=${sip_h_X-MasPort}" inline="true"/>
+            <action application="set" data="x-template=${sip_h_X-Template}" inline="true"/>
+            <action application="set" data="x-s3-endpoint=${sip_h_X-S3Endpoint}" inline="true"/>
+	        <action application="set" data="x-ada-campaign-type=${sip_h_X-ADACampaignType}" inline="true"/>
+
+            <action application="set" data="ignore_display_updates=true"/>
+            <action application="set" data="is_olos_studio=true"/>
+
+	        <action application="set" data="ork_ip=$${olos.orc.aws}" inline="true"/>
+	        <action application="set" data="curl_timeout=2" inline="true"/>
+	        <action application="curl" data="http://${ork_ip}:8001/next-agent" inline="true"/>
+
+            <action application="set" data="ork_port=${curl_response_data}" inline="true"/>
+            <action application="log" data="ork_port:${ork_port}"/>
+
+            <action application="sched_hangup" data="+300 487"/>
+
+	    <condition field="${ork_port}" expression="^$">
+                <action application="respond" data="503"/>
+                <action application="hangup"/>
+		<anti-action application="set" data="ai_orchestrator_endpoint=ws://${ork_ip}:${ork_port}/audio"/>
+                <anti-action application="javascript" data="way/start-ada-atendimento-saude-benner-v1.js"/>
+            </condition>
+
+        </condition>
+    </extension>
+
+</include>
